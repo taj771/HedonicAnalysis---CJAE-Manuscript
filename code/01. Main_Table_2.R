@@ -67,9 +67,10 @@ df_main <- df_main%>%
 
 library(sf)
 library(tidyverse)
-library(dplyr)
 
 hwydist <- st_read("./shapefile/house_n400hwy_meters.shp")
+
+library(dplyr)
 
 
 hwydist <- hwydist%>%

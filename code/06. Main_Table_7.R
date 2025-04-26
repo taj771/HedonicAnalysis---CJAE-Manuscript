@@ -38,7 +38,11 @@ df_cen_value <- df_cen%>%
   mutate(val_wf_pp = val_wf/Popultn)%>%
   mutate(val_nwf_pp = val_nwf/Popultn)%>%
   mutate(val_tot_pp = val_wf_pp + val_nwf_pp)%>%
-  select(GeoUID,val_wf,val_nwf,val_tot,val_wf_pp,val_nwf_pp,val_tot_pp,ratio,adj_bfp_250,adj_bfp_250_500,AvgDwlv,CSD_UID,Popultn)%>%
+  mutate(tot_bfp = adj_bfp_250+adj_bfp_250_500)%>%
+  mutate(tot_prop_value = tot_bfp*AvgDwlv)%>%
+  mutate(wf_prop_value =adj_bfp_250*AvgDwlv)%>%
+  mutate(nwf_prop_value =adj_bfp_250_500*AvgDwlv)%>%
+  select(GeoUID,val_wf,val_nwf,val_tot,val_wf_pp,val_nwf_pp,val_tot_pp,ratio,adj_bfp_250,adj_bfp_250_500,AvgDwlv,wf_prop_value,nwf_prop_value,tot_prop_value,CSD_UID,Popultn)%>%
   as.data.frame()%>%
   select(-geometry)
 
@@ -54,16 +58,20 @@ st_write(df_value,"./shapefile/value_map.shp", delete_layer = T )
 
 df_final <- df_value%>%
   select(adj_bfp_250,val_wf,adj_bfp_250_500,val_nwf,val_tot,val_wf_pp,
-         val_nwf_pp,val_tot_pp,AvgDwlv)%>%
+         val_nwf_pp,val_tot_pp,AvgDwlv,wf_prop_value,nwf_prop_value,tot_prop_value)%>%
   mutate(totnum_bfp_250 = sum(adj_bfp_250),
          totnum_bfp_250_500 = sum(adj_bfp_250_500),
          tot_bfp = totnum_bfp_250+totnum_bfp_250_500,
          tot_val_wf = sum(val_wf/1000000),
          tot_val_nwf = sum(val_nwf/1000000),
          tot_val = tot_val_wf+tot_val_nwf,
-         tot_val_pp = mean(val_tot_pp))%>%
-         mutate(ave_prop_value = mean(AvgDwlv[AvgDwlv != 0]))%>%
-  select(totnum_bfp_250,totnum_bfp_250_500,tot_bfp,tot_val_wf,tot_val_nwf,tot_val,tot_val_pp,ave_prop_value)%>%
+         tot_value_prop = sum(tot_prop_value),
+         tot_val_pp = mean(val_tot_pp),
+         tot_wf_prop_val = sum(wf_prop_value),
+         tot_nwf_prop_val = sum(nwf_prop_value),
+         
+         )%>%
+  select(totnum_bfp_250,totnum_bfp_250_500,tot_bfp,tot_val_wf,tot_val_nwf,tot_val,tot_val_pp,tot_wf_prop_val,tot_nwf_prop_val,tot_value_prop)%>%
   as.data.frame()%>%
   select(-geometry)%>%
   distinct(,.keep_all = T)
